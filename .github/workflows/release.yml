@@ -71,7 +71,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles portable'
             target: 'windows'
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
@@ -128,8 +128,10 @@ jobs:
         shell: pwsh
         run: |
           # Windowsビルドではportable版のみを生成するように設定を変更
+          # wixとnsisを無効化して、portableのみを生成
           $config = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
-          $config.bundle.targets = @("portable")
+          $config.bundle.windows.wix = $null
+          $config.bundle.windows | Add-Member -MemberType NoteProperty -Name "nsis" -Value $null -Force
           $config | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
 
       - name: Build the app
