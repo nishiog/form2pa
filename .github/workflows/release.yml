@@ -3,14 +3,14 @@ name: Build and Release
 on:
   push:
     branches:
-      - main  # mainブランチへのマージ時
+      - master  # masterブランチへのマージ時
     tags:
       - '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]*'  # 日付形式のタグ（YYYY-MM-DD または YYYY-MM-DD.1 など）
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
   create-tag:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && !startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -115,6 +115,12 @@ jobs:
 
       - name: Install frontend dependencies
         run: npm install
+
+      - name: Generate Windows icon
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Tauri CLIを使ってICOファイルを生成（Windowsビルドに必要）
+          npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation skipped"
 
       - name: Build the app
         continue-on-error: ${{ matrix.optional == true }}

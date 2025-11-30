@@ -1,0 +1,19 @@
+[package]
+name = "workflow-form-tauri"
+version = "1.0.0"
+description = "Workflow Form - PowerAutomate Integration"
+authors = ["you"]
+license = "MIT"
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = [] }
+tauri-plugin-shell = { version = "2.0" }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+

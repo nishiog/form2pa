@@ -1,0 +1,16 @@
+{
+  "name": "workflow-form-tauri",
+  "version": "1.0.0",
+  "description": "Workflow Form - PowerAutomate Integration",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

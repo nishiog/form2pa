@@ -1,0 +1,87 @@
+{
+  "webhook": {
+    "url": "",
+    "token": ""
+  },
+  "documentTypes": {
+    "contract": {
+      "name": "契約書",
+      "formId": "contract-form",
+      "fields": [
+        {
+          "name": "contract-content",
+          "label": "契約内容",
+          "type": "textarea",
+          "placeholder": "契約の詳細を入力してください"
+        },
+        {
+          "name": "contract-amount",
+          "label": "契約金額",
+          "type": "text",
+          "placeholder": "例: 1,000,000円"
+        },
+        {
+          "name": "contract-term",
+          "label": "契約期間",
+          "type": "text",
+          "placeholder": "例: 2024年1月1日から2024年12月31日まで"
+        }
+      ]
+    },
+    "consent": {
+      "name": "同意書",
+      "formId": "consent-form",
+      "fields": [
+        {
+          "name": "consent-purpose",
+          "label": "同意事項",
+          "type": "textarea",
+          "placeholder": "同意する内容を詳しく記入してください"
+        }
+      ]
+    },
+    "notification": {
+      "name": "通知書",
+      "formId": "notification-form",
+      "fields": [
+        {
+          "name": "notification-subject",
+          "label": "件名",
+          "type": "text",
+          "placeholder": "通知の件名を入力"
+        },
+        {
+          "name": "notification-body",
+          "label": "通知内容",
+          "type": "textarea",
+          "placeholder": "通知の詳細内容を記入してください"
+        }
+      ]
+    },
+    "settlement": {
+      "name": "和解書",
+      "formId": "settlement-form",
+      "fields": [
+        {
+          "name": "settlement-issue",
+          "label": "争点",
+          "type": "textarea",
+          "placeholder": "争点となった事項を記入してください"
+        },
+        {
+          "name": "settlement-amount",
+          "label": "和解金額",
+          "type": "text",
+          "placeholder": "例: 500,000円"
+        },
+        {
+          "name": "settlement-conditions",
+          "label": "和解条件",
+          "type": "textarea",
+          "placeholder": "和解の条件を記入してください"
+        }
+      ]
+    }
+  }
+}
+
