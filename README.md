@@ -90,6 +90,15 @@ The JSON data sent to the webhook:
 }
 ```
 
+## Branch Protection
+
+This repository uses branch protection rules to ensure code quality. See [`.github/BRANCH_PROTECTION.md`](.github/BRANCH_PROTECTION.md) for setup instructions.
+
+**Required before merging PRs:**
+- ✅ CI build must pass
+- ✅ At least 1 code review approval
+- ❌ Direct pushes to `master` branch are not allowed
+
 ## License
 
 MIT License

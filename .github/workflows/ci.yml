@@ -3,10 +3,10 @@ name: CI
 on:
   pull_request:
     branches:
-      - main
+      - master
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -28,4 +28,13 @@ jobs:
 
       - name: Build application
         run: npm run tauri build
+
+      - name: Verify build output
+        run: |
+          if (Test-Path "src-tauri\target\release\workflow-form-tauri.exe") {
+            echo "✅ Build successful - executable file found"
+          } else {
+            echo "❌ Build failed - executable file not found"
+            exit 1
+          }
 

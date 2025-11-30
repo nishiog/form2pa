@@ -4,7 +4,7 @@
 
 ### Automatic Release (Recommended)
 
-When a PR is merged to the `main` branch, a **date-based tag is automatically created** and builds for Windows/Mac are executed.
+When a PR is merged to the `master` branch, a **date-based tag is automatically created** and builds for Windows/Mac are executed.
 
 #### Tag Naming Convention
 
@@ -13,7 +13,7 @@ When a PR is merged to the `main` branch, a **date-based tag is automatically cr
 
 #### Workflow
 
-1. Merge PR to `main` branch
+1. Merge PR to `master` branch
 2. Date tag is automatically created (with sequence number if tag already exists)
 3. Builds are executed for all platforms
 4. Build artifacts are uploaded to GitHub Releases
