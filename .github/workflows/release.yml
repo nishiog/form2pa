@@ -73,10 +73,6 @@ jobs:
           - platform: 'windows-latest'
             args: '--bundles portable'
             target: 'windows'
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
-            target: 'macos'
-            optional: true
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -111,23 +107,39 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target == 'macos' && 'aarch64-apple-darwin' || '' }}
 
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Generate icons
-        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
+      - name: Generate Windows icon
+        if: matrix.platform == 'windows-latest'
         run: |
-          # Tauri CLIを使ってアイコンファイルを生成（各プラットフォーム用）
+          # Tauri CLIを使ってICOファイルを生成（Windowsビルドに必要）
           npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation skipped"
+          # portable版でもicoファイルが生成されていることを確認
+          if (Test-Path "src-tauri\icons\icon.ico") {
+            echo "✅ icon.ico generated successfully"
+          } else {
+            echo "⚠️  icon.ico not found, but continuing..."
+          }
+        shell: pwsh
 
-      # Note: --bundles portable オプションを使用することで、portable版のみが生成されます
-      # targetsは "all" のままで問題ありません（--bundles で指定したもののみが生成されます）
+      - name: Configure Windows for portable build only
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Windowsビルドではportable版のみを生成するように設定
+          # wixとmsiを無効化して、portableのみが生成されるようにする
+          $config = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
+          # wixを無効化
+          $config.bundle.windows.wix = $null
+          # targetsからmsiとnsisを除外（portableのみを有効にする）
+          # Note: Tauri v2ではtargetsに"portable"を直接指定できないため、
+          # wixを無効化することでMSIが生成されないようにする
+          $config | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
+          Write-Host "✅ Configured for portable build only"
 
       - name: Build the app
-        continue-on-error: ${{ matrix.optional == true }}
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
