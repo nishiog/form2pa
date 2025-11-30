@@ -87,6 +87,7 @@ jobs:
 
       - name: Get tag name
         id: tag
+        shell: bash
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             # タグから直接実行された場合
