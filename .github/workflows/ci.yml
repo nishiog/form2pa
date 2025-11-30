@@ -26,6 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate Windows icon from PNG
+        run: |
+          # Tauri CLIを使ってICOファイルを生成（Windowsビルドに必要）
+          npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation failed, continuing..."
+
       - name: Build application
         run: npm run tauri build
 

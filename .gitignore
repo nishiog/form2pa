@@ -8,6 +8,13 @@ target/
 # Tauri
 src-tauri/gen/
 src-tauri/target/
+# Tauri icon files (keep only icon.png and icon.ico)
+src-tauri/icons/android/
+src-tauri/icons/ios/
+src-tauri/icons/*.png
+src-tauri/icons/*.icns
+src-tauri/icons/*.ico
+!src-tauri/icons/icon.png
 *.log
 
 # Build artifacts

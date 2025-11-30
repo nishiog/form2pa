@@ -116,6 +116,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Generate Windows icon
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Tauri CLIを使ってICOファイルを生成（Windowsビルドに必要）
+          npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation skipped"
+
       - name: Build the app
         continue-on-error: ${{ matrix.optional == true }}
         uses: tauri-apps/tauri-action@v0
