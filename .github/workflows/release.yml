@@ -71,7 +71,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles portable'
             target: 'windows'
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
@@ -117,10 +117,10 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Generate Windows icon
-        if: matrix.platform == 'windows-latest'
+      - name: Generate icons
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
         run: |
-          # Tauri CLIを使ってICOファイルを生成（Windowsビルドに必要）
+          # Tauri CLIを使ってアイコンファイルを生成（各プラットフォーム用）
           npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation skipped"
 
       - name: Build the app
