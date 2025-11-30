@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Rust
+target/
+# Cargo.lock はアプリケーションなのでコミットします
+
+# Tauri
+src-tauri/gen/
+src-tauri/target/
+*.log
+
+# Build artifacts
+*.app
+*.dmg
+*.deb
+*.rpm
+*.AppImage
+*.msi
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+build.log
+
+# Environment
+.env
+.env.local
+

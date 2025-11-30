@@ -1,0 +1,131 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main  # mainブランチへのマージ時
+    tags:
+      - '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]*'  # 日付形式のタグ（YYYY-MM-DD または YYYY-MM-DD.1 など）
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  create-tag:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tags.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Get existing tags for today
+        id: tags
+        run: |
+          DATE="${{ steps.date.outputs.date }}"
+          git fetch --tags
+          
+          # 今日の日付で始まるタグを取得し、連番を確認
+          EXISTING_TAGS=$(git tag -l "${DATE}*" | sort -V | tail -1)
+          
+          if [ -z "$EXISTING_TAGS" ]; then
+            # 今日のタグが存在しない場合
+            NEW_TAG="${DATE}"
+          else
+            # 最新のタグから連番を取得
+            if [[ "$EXISTING_TAGS" =~ \.[0-9]+$ ]]; then
+              # 既に連番が付いている場合（例: 2024-11-30.2）
+              LAST_NUM=$(echo "$EXISTING_TAGS" | sed -E 's/.*\.([0-9]+)$/\1/')
+              NEXT_NUM=$((LAST_NUM + 1))
+              NEW_TAG="${DATE}.${NEXT_NUM}"
+            else
+              # 連番がない場合（例: 2024-11-30）
+              NEW_TAG="${DATE}.1"
+            fi
+          fi
+          
+          echo "tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+          echo "Created tag: ${NEW_TAG}"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.tags.outputs.tag }}" -m "Release ${{ steps.tags.outputs.tag }}"
+          git push origin "${{ steps.tags.outputs.tag }}"
+
+  build-tauri:
+    needs: create-tag
+    if: always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped')
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'windows-latest'
+            args: ''
+            target: 'windows'
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            target: 'macos'
+            optional: true
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get tag name
+        id: tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # タグから直接実行された場合
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+          elif [[ "${{ needs.create-tag.result }}" == "success" ]]; then
+            # create-tagジョブで作成されたタグを使用
+            TAG_NAME="${{ needs.create-tag.outputs.tag }}"
+          else
+            # フォールバック: 最新のタグを取得
+            git fetch --tags
+            TAG_NAME=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+          fi
+          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "Building for tag: ${TAG_NAME}"
+
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl wget file libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target == 'macos' && 'aarch64-apple-darwin' || '' }}
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build the app
+        continue-on-error: ${{ matrix.optional == true }}
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          args: ${{ matrix.args }}
+          tagName: ${{ steps.tag.outputs.tag }}
+          releaseName: 'Workflow Form ${{ steps.tag.outputs.tag }}'
+          releaseBody: 'Release ${{ steps.tag.outputs.tag }} - Built on ${{ github.event.head_commit.timestamp || github.run_started_at }}'
+          releaseDraft: false
+          prerelease: false
