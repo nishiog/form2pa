@@ -71,7 +71,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles portable'
             target: 'windows'
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
