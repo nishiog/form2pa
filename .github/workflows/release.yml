@@ -71,7 +71,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: '--bundles portable'
+            args: ''
             target: 'windows'
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
@@ -122,6 +122,15 @@ jobs:
         run: |
           # Tauri CLIを使ってアイコンファイルを生成（各プラットフォーム用）
           npx tauri icon src-tauri/icons/icon.png 2>&1 || echo "Icon generation skipped"
+
+      - name: Configure Windows for portable build
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Windowsビルドではportable版のみを生成するように設定を変更
+          $config = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
+          $config.bundle.targets = @("portable")
+          $config | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
 
       - name: Build the app
         continue-on-error: ${{ matrix.optional == true }}
