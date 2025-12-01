@@ -32,7 +32,25 @@
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
-      "wix": null
+      "wix": null,
+      "nsis": {
+        "installerIcon": null,
+        "installMode": "perMachine",
+        "allowDowngrades": false,
+        "installerSidebar": null,
+        "displayLanguageSelector": false,
+        "compression": "external",
+        "shortcuts": true,
+        "menu": true,
+        "license": null,
+        "warningsAsErrors": true,
+        "customLanguageFiles": null,
+        "runAfterFinish": true,
+        "differentialPackage": false,
+        "dmg": null,
+        "guid": null,
+        "artifactName": "${productName}_${version}_x64.exe"
+      }
     },
     "macOS": {
       "frameworks": [],
