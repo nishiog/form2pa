@@ -79,7 +79,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles nsis'
             target: 'windows'
 
     runs-on: ${{ matrix.platform }}
@@ -132,7 +132,19 @@ jobs:
           }
         shell: pwsh
 
-      # Note: targets: "all" で全てのバンドル形式（MSI、NSIS、portable）が生成されます
+      - name: Configure bundle targets to exclude MSI
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          # MSI（wix）を除外して、NSISとportableのみを生成するように設定
+          $config = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
+          # wixを無効化（既にnullだが、念のため）
+          $config.bundle.windows.wix = $null
+          # targetsを明示的に設定（MSIを除外）
+          # Note: Tauri v2では"portable"はtargetsに直接指定できないため、
+          # --bundles オプションで制御するか、wixを無効化することでMSIを除外
+          $config | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
+          Write-Host "✅ Configured to exclude MSI bundle"
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
