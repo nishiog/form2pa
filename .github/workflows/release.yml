@@ -71,7 +71,7 @@ jobs:
       matrix:
         include:
           - platform: 'windows-latest'
-            args: '--bundles portable'
+            args: ''
             target: 'windows'
 
     runs-on: ${{ matrix.platform }}
@@ -124,20 +124,7 @@ jobs:
           }
         shell: pwsh
 
-      - name: Configure Windows for portable build only
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Windowsビルドではportable版のみを生成するように設定
-          # wixとmsiを無効化して、portableのみが生成されるようにする
-          $config = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
-          # wixを無効化
-          $config.bundle.windows.wix = $null
-          # targetsからmsiとnsisを除外（portableのみを有効にする）
-          # Note: Tauri v2ではtargetsに"portable"を直接指定できないため、
-          # wixを無効化することでMSIが生成されないようにする
-          $config | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
-          Write-Host "✅ Configured for portable build only"
+      # Note: targets: "all" で全てのバンドル形式（MSI、NSIS、portable）が生成されます
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
