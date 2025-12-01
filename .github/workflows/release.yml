@@ -55,15 +55,23 @@ jobs:
           echo "Created tag: ${NEW_TAG}"
 
       - name: Create and push tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.tags.outputs.tag }}" -m "Release ${{ steps.tags.outputs.tag }}"
+          # [skip ci] を追加して、タグプッシュ時にワークフローが再実行されないようにする
+          git tag -a "${{ steps.tags.outputs.tag }}" -m "Release ${{ steps.tags.outputs.tag }} [skip ci]"
           git push origin "${{ steps.tags.outputs.tag }}"
 
   build-tauri:
     needs: create-tag
-    if: always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped')
+    if: |
+      always() && 
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+        (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped')
+      )
     permissions:
       contents: write
     strategy:
