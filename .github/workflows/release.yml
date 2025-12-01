@@ -147,6 +147,7 @@ jobs:
           Write-Host "✅ Configured to exclude MSI bundle"
 
       - name: Build the app
+        id: build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,3 +159,33 @@ jobs:
           releaseBody: 'Release ${{ steps.tag.outputs.tag }} - Built on ${{ github.event.head_commit.timestamp || github.run_started_at }}'
           releaseDraft: false
           prerelease: false
+
+      - name: Rename NSIS installer to remove -setup suffix and re-upload
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # NSISインストーラーのファイル名から-setupサフィックスを削除
+          $nsisDir = "src-tauri\target\release\bundle\nsis"
+          $nsisFile = Get-ChildItem -Path $nsisDir -Filter "*setup.exe" -ErrorAction SilentlyContinue
+          if ($nsisFile) {
+            $tag = "${{ steps.tag.outputs.tag }}"
+            $oldName = $nsisFile.Name
+            $newName = $oldName -replace '-setup\.exe$', '.exe'
+            $newPath = Join-Path $nsisFile.DirectoryName $newName
+            
+            # ファイルをリネーム
+            Move-Item -Path $nsisFile.FullName -Destination $newPath -Force
+            Write-Host "✅ Renamed: $oldName -> $newName"
+            
+            # リリースから元のファイルを削除
+            gh release delete-asset "$tag" "$oldName" --yes 2>$null
+            Write-Host "✅ Deleted old file from release: $oldName"
+            
+            # リリースにリネームしたファイルをアップロード
+            gh release upload "$tag" "$newPath"
+            Write-Host "✅ Uploaded renamed file to release: $newName"
+          } else {
+            Write-Host "⚠️  NSIS installer file not found"
+          }
